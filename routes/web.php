@@ -3,13 +3,12 @@
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 // User Routes
-Route::get('/', function () {
-    return Inertia::render('Welcome');
-})->name('home');
+Route::get('/',[UserController::class,'index'])->name('home');
 
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
