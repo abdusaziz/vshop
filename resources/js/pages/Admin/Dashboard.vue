@@ -2,6 +2,7 @@
 import { onMounted } from 'vue'
 import { initFlowbite } from 'flowbite'
 import AdminLayout from './Components/AdminLayout.vue';
+import { Head } from '@inertiajs/vue3';
 
 // initialize components based on data attribute selectors
 onMounted(() => {
@@ -9,8 +10,8 @@ onMounted(() => {
 })
 </script>
 <template>
+  <Head title="Dashboard" />
   <AdminLayout>
-    <main class="p-4 md:ml-64 h-auto pt-20">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         <div
           class="border-2 border-dashed border-gray-300 rounded-lg dark:border-gray-600 h-32 md:h-64"
@@ -59,6 +60,5 @@ onMounted(() => {
           class="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"
         ></div>
       </div>
-    </main>
   </AdminLayout>
 </template>
