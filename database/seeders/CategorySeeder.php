@@ -14,20 +14,40 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         Category::create([
-            'name' => 'DEODORANTS & FRAGRANCES',
-            'slug' => 'DEODORANTS-FRAGRANCES',
+            'name' => 'SKIN CARE',
+            'slug' => 'skin-care',
         ]);
         Category::create([
             'name' => 'BEVERAGES',
-            'slug' => 'BEVERAGES',
+            'slug' => 'beverages',
+        ]);
+        Category::create([
+            'name' => 'FABRIC ENHANCERS',
+            'slug' => 'fabric-enhancers',
         ]);
         Category::create([
             'name' => 'SKIN CLEANSING',
-            'slug' => 'SKIN-CLEANSING',
+            'slug' => 'skin-cleansing',
+        ]);
+        Category::create([
+            'name' => 'DEODORANTS & FRAGRANCES',
+            'slug' => 'deodorants-frAGRANCES',
+        ]);
+        Category::create([
+            'name' => 'ORAL CARE',
+            'slug' => 'oral-care',
         ]);
         Category::create([
             'name' => 'HAIR CARE',
-            'slug' => 'HAIR-CARE',
+            'slug' => 'hair-care',
+        ]);
+        Category::create([
+            'name' => 'FABRIC CLEANING',
+            'slug' => 'fabric-cleaning',
+        ]);
+        Category::create([
+            'name' => 'HOME & HYGIENE',
+            'slug' => 'home-hygiene',
         ]);
     }
 }

@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\User\UserController;
+use App\Models\Brand;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -34,6 +36,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::patch('/products/update/{id}', [ProductController::class, 'update'])->name('admin.products.update');
     Route::delete('/products/delete/{id}', [ProductController::class, 'destroy'])->name('admin.products.delete');
     Route::delete('/products/image/delete/{id}', [ProductController::class, 'deleteImage'])->name('admin.products.image.delete');
+
+    // Brand Routes
+    Route::get('/brands', [BrandController::class, 'index'])->name('admin.brands.index');
+    Route::post('/brands/store', [BrandController::class, 'store'])->name('admin.brands.store');
+    Route::patch('/brands/update/{id}', [BrandController::class, 'update'])->name('admin.brands.update');
+    Route::delete('/brands/delete/{id}', [BrandController::class, 'destroy'])->name('admin.brands.delete');
+
 });
 
 

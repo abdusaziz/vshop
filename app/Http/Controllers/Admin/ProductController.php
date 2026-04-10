@@ -46,11 +46,10 @@ class ProductController extends Controller
         if ($request->hasFile('product_images')) {
             foreach ($request->file('product_images') as $image) {
                 $uniqueName = time() . '-' . Str::random(10) . '.' . $image->getClientOriginalExtension();
-                $image->move('product_images', $uniqueName);
 
                 ProductImage::create([
                     'product_id' => $product->id,
-                    'image' => 'product_images/' . $uniqueName
+                    'image' => $image->storeAs('storage/product_images', $uniqueName, 'public')
                 ]);
             }
         }
@@ -78,7 +77,7 @@ class ProductController extends Controller
 
                 ProductImage::create([
                     'product_id' => $product->id,
-                    'image' => 'product_images/' . $uniqueName
+                    'image' => 'storage/product_images/' . $uniqueName
                 ]);
             }
         }
