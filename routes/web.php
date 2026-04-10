@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\UserController;
 use App\Models\Brand;
 use Illuminate\Support\Facades\Route;
@@ -43,6 +44,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::patch('/brands/update/{id}', [BrandController::class, 'update'])->name('admin.brands.update');
     Route::delete('/brands/delete/{id}', [BrandController::class, 'destroy'])->name('admin.brands.delete');
 
+});
+
+
+// Add to Cart Route
+Route::prefix('cart')->group(function () {
+    Route::get('view', [CartController::class, 'view'])->name('cart.view');
+    Route::post('store/{product}', [CartController::class, 'store'])->name('cart.store');
+    Route::patch('update/{cartItem}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('delete/{cartItem}', [CartController::class, 'destroy'])->name('cart.delete');
 });
 
 

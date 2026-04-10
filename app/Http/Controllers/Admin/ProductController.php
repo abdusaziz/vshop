@@ -49,7 +49,7 @@ class ProductController extends Controller
 
                 ProductImage::create([
                     'product_id' => $product->id,
-                    'image' => $image->storeAs('storage/product_images', $uniqueName, 'public')
+                    'image' => $image->storeAs('product_images', $uniqueName, 'public')
                 ]);
             }
         }
@@ -73,11 +73,11 @@ class ProductController extends Controller
         if ($request->hasFile('product_images')) {
             foreach ($request->file('product_images') as $image) {
                 $uniqueName = time() . '-' . Str::random(10) . '.' . $image->getClientOriginalExtension();
-                $image->move('product_images', $uniqueName);
+                // $image->move('product_images', $uniqueName);
 
                 ProductImage::create([
                     'product_id' => $product->id,
-                    'image' => 'storage/product_images/' . $uniqueName
+                    'image' => $image->storeAs('product_images', $uniqueName, 'public')
                 ]);
             }
         }
@@ -97,7 +97,9 @@ class ProductController extends Controller
     public function deleteImage($id)
     {
         $image = ProductImage::findOrFail($id);
+        if(file_exists(public_path($image->image))){    
         unlink(public_path($image->image));
+        }
         $image->delete();
     }
 }

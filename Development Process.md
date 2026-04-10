@@ -44,3 +44,15 @@ Same way make for Brand, Category
         follow other instructions, model protected fillable set and then run below command
        => php artisan DB:seed ProductSeeder
 
+# 10th Video
+
+    // Add to Cart Route
+    Route::prefix('cart')->group(function () {
+        Route::get('view', [CartController::class, 'view'])->name('cart.view');
+        Route::post('store/{product}', [CartController::class, 'store'])->name('cart.store');
+        Route::patch('update/{cartItem}', [CartController::class, 'update'])->name('cart.update');
+        Route::delete('delete/{cartItem}', [CartController::class, 'destroy'])->name('cart.delete');
+    });
+
+
+    
