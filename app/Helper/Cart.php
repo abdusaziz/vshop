@@ -2,6 +2,7 @@
 
 namespace App\Helper;
 
+use App\Models\CartItem;
 use Illuminate\Support\Facades\Cookie;
 
 class Cart
@@ -36,54 +37,78 @@ class Cart
     }
 
     public static function setCookieCartItems(){
-        $items = self::getCookieCartItems();
-        Cookie::queue('cart_items', json_encode($items), 0);
+        // $items = self::getCookieCartItems();
+        // Cookie::queue('cart_items', json_encode($items), 0);
+        Cookie::queue('cart_items', fn(int $carry,array $item)=> $carry + $item['quantity'], 0);
+    
     }
 
     public static function saveCookieCartItems()
     {
-        $request = request();
-       $user = auth()->user();
-       $cartItems = self::getCookieCartItems();
-       $newCartItems = [];
-       foreach ($cartItems as $cartItem) {
-        $existingCartItem = $user->cart()->where('product_id', $cartItem['product_id'])->first();
-       
-       if(!$existingCartItem)   {
-        $newCartItems[] = [
-            'user_id' => $user->id,
-            'product_id' => $cartItem['product_id'],
-            'quantity' => $cartItem['quantity'],
-        ];
-       }
-       }
+        $user = auth()->user();
+        $userCartItems = CartItem::where(['user_id' => $user->id])->get()->keyBy('product_id');
+        $savedCartItems = [];
 
-       if(!empty($newCartItems)){
-        $user->cart()->createMany($newCartItems);
-       }
+        foreach(self::getCookieCartItems() as $cartItem) {
+            if(isset($userCartItems[$cartItem['product_id']])) {
+                $userCartItems[$cartItem['product_id']]->update([
+                    'quantity' => $cartItem['quantity']]);
+                continue;
+            } 
+                $savedCartItems[] = [
+                    'user_id' => $user->id,
+                    'product_id' => $cartItem['product_id'],
+                    'quantity' => $cartItem['quantity'],
+                ];            
+        }
+        if(!empty($savedCartItems)){
+            CartItem::insert($savedCartItems);
+        } 
+
+    //     $request = request();
+    //    $user = auth()->user();
+    //    $cartItems = self::getCookieCartItems();
+    //    $newCartItems = [];
+    //    foreach ($cartItems as $cartItem) {
+    //     $existingCartItem = $user->cart()->where('product_id', $cartItem['product_id'])->first();
+       
+    //    if(!$existingCartItem)   {
+    //     $newCartItems[] = [
+    //         'user_id' => $user->id,
+    //         'product_id' => $cartItem['product_id'],
+    //         'quantity' => $cartItem['quantity'],
+    //     ];
+    //    }
+    //    }
+
+    //    if(!empty($newCartItems)){
+    //     $user->cart()->createMany($newCartItems);
+    //    }
     }
 
     public static function moveCartItemsToDb()
     {
-        $user = auth()->user();
-        $cookieCartItems = self::getCookieCartItems();
+        $request = request();
+        $CartItems = self::getCookieCartItems();
+        $newCartItems = [];
+            $user = auth()->user();
 
-        foreach ($cookieCartItems as $cartItem) {
+        foreach ($CartItems as $cartItem) {
             $existingCartItem = $user->cart()->where('product_id', $cartItem['product_id'])->first();
 
-            if ($existingCartItem) {
-                $existingCartItem->quantity += $cartItem['quantity'];
-                $existingCartItem->save();
-            } else {
-                $user->cart()->create([
+            if (!$existingCartItem) {
+                $newCartItems[] = [
+                    'user_id' => $user->id,
                     'product_id' => $cartItem['product_id'],
                     'quantity' => $cartItem['quantity'],
-                ]);
+                ];
+            } 
+
+            if(!empty($newCartItems)){
+                CartItem::insert($newCartItems);
             }
         }
 
-        // Clear the cookie after moving items to the database
-        Cookie::queue(Cookie::forget('cart_items'));
     }
     public static function addToCart($productId, $quantity = 1)
     {
