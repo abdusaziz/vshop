@@ -21,7 +21,7 @@ class CartController extends Controller
     {
         $quantity = $request->post('quantity', 1);
         $user = $request->user();
-
+dd($quantity);
         if ($user) {
             $cart = $user->cart()->where('product_id', $product->id)->first();
             if ($cart) {
@@ -35,29 +35,29 @@ class CartController extends Controller
         } else {
             $cartItems = Cart::getCookieCartItems();
             $isProductExist = false;
-            foreach ($cartItems as &$cartItem) {
+            foreach ($cartItems as $cartItem) {
                 if ($cartItem['product_id'] == $product->id) {
                     $cartItem['quantity'] += $quantity;
                     $isProductExist = true;
                     break;
                 }
             }
-            if (!$isProductExist) {
+            if (!$isProductExist) { 
                 $cartItems[] = [
                     'user_id' => null,
                     'product_id' => $product->id,
                     'quantity' => $quantity,
                     'price' => $product->price,
                 ];
+                }
                 Cart::setCookieCartItems($cartItems);
-            }
-            return redirect()->back()->with('success', 'Product added to cart successfully!');
-        }
+                }
+                return redirect()->back()->with('success', 'Product added to cart successfully!');
     }
 
     public function update(Request $request, Product $product)
     {
-        $quantity = $request->post('quantity', 1);
+        $quantity = $request->integer('quantity');
         $user = $request->user();
         if ($user) {
             $cartItem = $user->cart()->where('product_id', $product->id)->first();
@@ -66,7 +66,7 @@ class CartController extends Controller
             }
         } else {
             $cartItems = Cart::getCookieCartItems();
-            foreach ($cartItems as &$cartItem) {
+            foreach ($cartItems as $cartItem) {
                 if ($cartItem['product_id'] == $product->id) {
                     $cartItem['quantity'] = $quantity;
                     break;
