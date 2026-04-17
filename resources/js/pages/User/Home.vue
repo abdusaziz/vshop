@@ -1,6 +1,7 @@
 <script setup>
 import { router } from '@inertiajs/vue3';
 import UserLayout from './Layouts/UserLayout.vue';
+import Hero from './Layouts/Hero.vue';
 import Swal from 'sweetalert2';
 import { route } from 'ziggy-js';
 defineProps({
@@ -10,32 +11,36 @@ defineProps({
     }
 });
 
-const addToCart = (product) => {
-    console.log('Adding to cart:', product);
-    router.post(route('cart.store', product), {
-        onSuccess: (page) => {
-            Swal.fire({
-                icon: 'success',
-                title: page.props.flash.Success,
-                text: `${product} has been added to your cart!`,
-                timer: 2000,
-                showConfirmButton: false,
-                position: 'top-end',
-                toast: true,
-            });
-        },
-        onError: (errors) => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: errors.message || 'Failed to add product to cart.',
-            });
-        }
-    });
+const addToCart = async (product) => {
+    try {
+        await router.post(route('cart.store', product), product, {
+            onSuccess: page => {
+                Swal.fire({
+                    title: 'Product added!',
+                    text: page.props?.flash?.success || 'Product added successfully',
+                    icon: 'success',
+                    timer: 1600,
+                    showConfirmButton: false,
+                    position: 'top-end',
+                    toast: true,
+                });
+                // dialogVisible.value = false;
+            }
+        });
+    } catch (error) {
+        console.log(error);
+    }
+
+
+
 }
 </script>
 <template>
+
     <UserLayout>
+        <!-- Hero Section Start -->
+        <Hero />
+        <!-- Hero Section End -->
         <div class="bg-white">
             <div class="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
                 <h2 class="text-2xl font-bold tracking-tight text-gray-900">Latest Products List</h2>
@@ -45,7 +50,7 @@ const addToCart = (product) => {
                         <div>
                             <div>
                                 <img v-if="product.product_images.length > 0"
-                                    :src="`storage/${product.product_images[0].image}`" :alt="product.imageAlt"
+                                    :src="`/storage/${product.product_images[0].image}`" :alt="product.imageAlt"
                                     class="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80" />
                                 <img v-else
                                     src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"
@@ -61,7 +66,7 @@ const addToCart = (product) => {
                                                 d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
                                         </svg>
                                     </div>
-                                    <div @click="addToCart(product)"
+                                    <div
                                         class="rounded-md bg-white px-4 py-2 text-sm font-medium text-black hover:bg-gray-100 m-1">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">

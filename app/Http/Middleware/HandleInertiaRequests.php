@@ -45,6 +45,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'cart' =>  \App\Helper\Cart::getProductsAndCartItems(),
             'flash' => [
                 'success'   => fn () => $request->session()->get('success'),
                 'error'     => fn () => $request->session()->get('error'),

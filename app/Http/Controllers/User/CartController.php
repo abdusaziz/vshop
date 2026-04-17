@@ -13,7 +13,31 @@ class CartController extends Controller
 {
     public function view(Request $request)
     {
-        dd($request->user()->id);
+        $user = $request->user();
+        if(!$user && !request()->hasCookie('cart_items')) {
+            return redirect()->route('home')->with('info', 'Your cart is empty!');
+        }
+
+        if($user && $user->cart()->count() <= 0) {
+            return redirect()->route('home')->with('info', 'Your cart is empty!');
+        }
+
+        if(!$user && request()->hasCookie('cart_items')) {
+            $cartItems = Cart::getCookieCartItems();
+            if(count($cartItems) <= 0) {
+                return redirect()->route('home')->with('info', 'Your cart is empty!');
+            }
+        }
+
+        if($user) {
+            $cartItems = Cart::getCartItems($user);
+        } else {
+            $cartItems = Cart::getCookieCartItems();
+        }
+
+        return inertia('User/CartList', [
+            'cartItems' => Cart::getCartItems($request->user()),
+        ]);
         // Logic to display the cart view
     }
 
@@ -21,7 +45,6 @@ class CartController extends Controller
     {
         $quantity = $request->post('quantity', 1);
         $user = $request->user();
-dd($quantity);
         if ($user) {
             $cart = $user->cart()->where('product_id', $product->id)->first();
             if ($cart) {
@@ -35,24 +58,27 @@ dd($quantity);
         } else {
             $cartItems = Cart::getCookieCartItems();
             $isProductExist = false;
-            foreach ($cartItems as $cartItem) {
+            foreach ($cartItems as $key => $cartItem) {
                 if ($cartItem['product_id'] == $product->id) {
-                    $cartItem['quantity'] += $quantity;
+                    $cartItems[$key]['quantity'] += 1;
                     $isProductExist = true;
                     break;
                 }
             }
-            if (!$isProductExist) { 
+            if (!$isProductExist) {
                 $cartItems[] = [
                     'user_id' => null,
                     'product_id' => $product->id,
-                    'quantity' => $quantity,
+                    'quantity' => 1,
                     'price' => $product->price,
+                    'title' => $product->title,
+                    'image' => $product->product_images[0]['image'] ?? null,
                 ];
-                }
-                Cart::setCookieCartItems($cartItems);
-                }
-                return redirect()->back()->with('success', 'Product added to cart successfully!');
+            }
+            Cart::setCookieCartItems($cartItems);
+        }
+        
+        return redirect()->back()->with('success', 'Product added to cart successfully!');   
     }
 
     public function update(Request $request, Product $product)
@@ -84,9 +110,9 @@ dd($quantity);
             $cartItem = $user->cart()->where('product_id', $product->id)->first();
             if ($cartItem) {
                 $cartItem->delete();
-                if(CartItem::count() <= 0){
+                if (CartItem::count() <= 0) {
                     return redirect()->route('home')->with('info', 'Cart is empty!');
-                }else{
+                } else {
                     return redirect()->back()->with('success', 'Product removed from cart successfully!');
                 }
             }
@@ -100,9 +126,9 @@ dd($quantity);
             }
         }
         Cart::setCookieCartItems($cartItems);
-        if(count($cartItems) <= 0){
+        if (count($cartItems) <= 0) {
             return redirect()->route('home')->with('info', 'Cart is empty!');
-        }else{
+        } else {
             return redirect()->back()->with('success', 'Product removed from cart successfully!');
         }
     }
