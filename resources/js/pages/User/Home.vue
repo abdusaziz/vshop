@@ -14,6 +14,7 @@ defineProps({
 const addToCart = async (product) => {
     try {
         await router.post(route('cart.store', product), product, {
+            preserveScroll: true,
             onSuccess: page => {
                 Swal.fire({
                     title: 'Product added!',
@@ -37,7 +38,7 @@ const addToCart = async (product) => {
 </script>
 <template>
 
-    <UserLayout>
+    <UserLayout preserve-scroll>
         <!-- Hero Section Start -->
         <Hero />
         <!-- Hero Section End -->
@@ -58,14 +59,14 @@ const addToCart = async (product) => {
                                     class="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80" />
                                 <div
                                     class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100 lg:h-80">
-                                    <div @click="addToCart(product)"
+                                    <Link @click="addToCart(product)" preserve-scroll href="#"
                                         class="rounded-md bg-white px-4 py-2 text-sm font-medium text-black hover:bg-gray-100 m-1">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
                                         </svg>
-                                    </div>
+                                    </Link>
                                     <div
                                         class="rounded-md bg-white px-4 py-2 text-sm font-medium text-black hover:bg-gray-100 m-1">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"

@@ -1,6 +1,6 @@
 import '../css/app.css';
 
-import { createInertiaApp } from '@inertiajs/vue3';
+import { createInertiaApp, Link} from '@inertiajs/vue3';
 import 'element-plus/dist/index.css';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
@@ -35,6 +35,7 @@ createInertiaApp({
             .use(ZiggyVue)
             .use(ElementPlus)
             .use(VueSweetalert2)
+            .component('Link', Link)
             .mount(el);
     },
     progress: {

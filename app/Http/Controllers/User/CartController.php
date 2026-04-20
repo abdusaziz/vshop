@@ -36,7 +36,7 @@ class CartController extends Controller
         }
 
         return inertia('User/CartList', [
-            'cartItems' => Cart::getCartItems($request->user()),
+            'cartItems' => Cart::getProductsAndCartItems(),
         ]);
         // Logic to display the cart view
     }
@@ -81,25 +81,39 @@ class CartController extends Controller
         return redirect()->back()->with('success', 'Product added to cart successfully!');   
     }
 
-    public function update(Request $request, Product $product)
+    public function update(Request $request, $product)
     {
         $quantity = $request->integer('quantity');
         $user = $request->user();
+        
+        // Handle both Product model binding and product_id integer
+        $productId = ($product instanceof Product) ? $product->id : $product;
+        
         if ($user) {
-            $cartItem = $user->cart()->where('product_id', $product->id)->first();
+            $cartItem = $user->cart()->where('product_id', $productId)->first();
             if ($cartItem) {
                 $cartItem->update(['quantity' => $quantity]);
             }
         } else {
             $cartItems = Cart::getCookieCartItems();
-            foreach ($cartItems as $cartItem) {
-                if ($cartItem['product_id'] == $product->id) {
+            foreach ($cartItems as &$cartItem) {
+                if ($cartItem['product_id'] == $productId) {
                     $cartItem['quantity'] = $quantity;
                     break;
                 }
             }
             Cart::setCookieCartItems($cartItems);
         }
+        
+        // Return JSON for AJAX requests, redirect for form submissions
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cart updated successfully!',
+                'cartItems' => Cart::getProductsAndCartItems(),
+            ]);
+        }
+        
         return redirect()->back()->with('success', 'Cart updated successfully!');
     }
 

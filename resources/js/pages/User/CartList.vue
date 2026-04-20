@@ -1,13 +1,61 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
+import { computed, reactive } from 'vue';
+import { router } from '@inertiajs/vue3';
 import UserLayout from './Layouts/UserLayout.vue';
 
-defineProps({
+const props = defineProps({
     cartItems: {
-        type: Array,
+        type: Object,
         required: true,
     },
 });
+
+// Make cartItems reactive
+const cartItems = reactive(props.cartItems);
+
+// Calculate total items price
+const totalItemsPrice = computed(() => {
+    if (!cartItems.skuItems) return 0;
+    return cartItems.skuItems.reduce((sum, item) => {
+        return sum + (item.price * item.quantity);
+    }, 0);
+});
+
+// Shipping cost (can be made dynamic later)
+const shippingCost = 19;
+
+// Calculate total cost
+const totalCost = computed(() => {
+    return totalItemsPrice.value + shippingCost;
+});
+
+// Update quantity
+const updateQuantity = (productId, newQuantity) => {
+    // Prevent quantity from going below 1
+    console.log('Updating quantity for product ID:', productId, 'to new quantity:', newQuantity);
+    const finalQuantity = Math.max(1, parseInt(newQuantity) || 1);
+
+    // Find the cart item and update it
+    const cartItem = cartItems.skuItems.find(item => item.product_id === productId);
+    if (cartItem) {
+        const previousQuantity = cartItem.quantity;
+        
+        // Update locally first for instant UI feedback
+        cartItem.quantity = finalQuantity;
+
+        // Make API call to update database
+        router.patch(`/cart/update/${productId}`, {
+            quantity: finalQuantity,
+        }, {
+            onError: (errors) => {
+                // Revert quantity on error
+                cartItem.quantity = previousQuantity;
+                console.error('Failed to update quantity:', errors);
+            }
+        });
+    }
+};
 
 </script>
 
@@ -41,7 +89,7 @@ defineProps({
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="cartItem in cartItems" :key="cartItem.product_id"
+                                <tr v-for="cartItem in cartItems.skuItems" :key="cartItem.product_id"
                                     class="bg-neutral-primary-soft border-b border-default hover:bg-neutral-secondary-medium">
                                     <td class="p-4">
                                         <img v-if="cartItem.image" :src="`/storage/${cartItem.image}`"
@@ -50,13 +98,14 @@ defineProps({
                                             class="w-16 md:w-24 max-w-full max-h-full" alt="Apple Watch">
                                     </td>
                                     <td class="px-6 py-4 font-semibold text-heading">
-                                        {{cartItem}}
+                                        {{cartItem.title}}
                                     </td>
                                     <td class="px-6 py-4">
                                         <form class="max-w-xs mx-auto">
                                             <label for="counter-input-1" class="sr-only">Choose quantity:</label>
                                             <div class="relative flex items-center">
-                                                <button type="button" id="decrement-button-1"
+                                                <button @click.prevent="updateQuantity(cartItem.product_id, cartItem.quantity - 1)"
+                                                type="button" id="decrement-button-1"
                                                     data-input-counter-decrement="counter-input-1"
                                                     class="flex items-center justify-center text-body bg-neutral-secondary-medium box-border border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary rounded-full text-sm focus:outline-none h-6 w-6">
                                                     <svg class="w-3 h-3 text-heading" aria-hidden="true"
@@ -66,10 +115,11 @@ defineProps({
                                                             stroke-linejoin="round" stroke-width="2" d="M5 12h14" />
                                                     </svg>
                                                 </button>
-                                                <input type="text" id="counter-input-1" data-input-counter
+                                                <input type="number" id="counter-input-1" data-input-counter
                                                     class="shrink-0 text-heading border-0 bg-transparent text-sm font-normal focus:outline-none focus:ring-0 max-w-[2.5rem] text-center"
-                                                    placeholder="" :value="cartItem.quantity" required />
-                                                <button type="button" id="increment-button-1"
+                                                    placeholder="" v-model.number="cartItem.quantity" min="1" required />
+                                                <button @click.prevent="updateQuantity(cartItem.product_id, cartItem.quantity + 1)" 
+                                                type="button" id="increment-button-1"
                                                     data-input-counter-increment="counter-input-1"
                                                     class="flex items-center justify-center text-body bg-neutral-secondary-medium box-border border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary rounded-full text-sm focus:outline-none h-6 w-6">
                                                     <svg class="w-3 h-3 text-heading" aria-hidden="true"
@@ -84,7 +134,7 @@ defineProps({
                                         </form>
                                     </td>
                                     <td class="px-6 py-4 font-semibold text-heading">
-                                        $599
+                                        ${{ (cartItem.price * cartItem.quantity).toFixed(2) }}
                                     </td>
                                     <td class="px-6 py-4">
                                         <a href="#" class="font-medium text-fg-danger hover:underline">Remove</a>
@@ -101,16 +151,16 @@ defineProps({
                     <h1 class="font-semibold text-2xl border-b pb-8">Order Summary</h1>
                     <div>
                         <div class="flex justify-between mt-10 mb-5">
-                            <span class="font-semibold text-sm uppercase">Items 3</span>
-                            <span class="font-semibold text-sm">$4598</span>
+                            <span class="font-semibold text-sm uppercase">Items {{ cartItems.skuCount }}</span>
+                            <span class="font-semibold text-sm">${{ totalItemsPrice.toFixed(2) }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="font-semibold text-sm uppercase">Shipping</span>
-                            <span class="font-semibold text-sm">$19</span>
+                            <span class="font-semibold text-sm">${{ shippingCost }}</span>
                         </div>
                         <div class="flex justify-between mt-4 mb-4">
                             <span class="font-semibold text-sm uppercase">Total cost</span>
-                            <span class="font-semibold text-sm">$4617</span>
+                            <span class="font-semibold text-sm">${{ totalCost.toFixed(2) }}</span>
                         </div>
                     </div>
                     <h2 class="text-gray-900 text-lg mb-1 font-medium title-font">Shipping Address</h2>
